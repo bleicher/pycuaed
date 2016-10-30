@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import curses
+import re
 
 # doc https://docs.python.org/3/howto/curses.html
 
@@ -15,12 +16,41 @@ def store_key(modifierkey, f):
 
 key_mapping = {}
 
+modern_to_curses_mapping = {
+    ("", "Left") : "KEY_LEFT",
+    ("", "Right"): "KEY_RIGHT",
+    ("", "Up"): "KEY_UP",
+    ("", "Down"): "KEY_DOWN",
+
+    ("Shift", "Up"): "\^\[\[A",
+    ("Shift", "Down"): "\^\[\[B",
+    ("Shift", "Right"): "\^\[\[C",
+    ("Shift", "Left"): "\^\[\[D",
+
+    ("Ctrl", "u"): "\^U",
+    ("Ctrl", "y"): "\^Y",
+    ("Ctrl", "x"): "\^X",
+    ("Ctrl", "g"): "\^G",
+    ("Ctrl", "v"): "\^V",
+    ("Ctrl", "o"): "\^O",
+    ("Ctrl", "s"): "\^S",
+    ("Ctrl", "p"): "\^P",
+    ("Ctrl", "f"): "\^F",
+    ("Ctrl", "r"): "\^R",
+    ("Ctrl", "w"): "\^W",
+    ("Ctrl", "a"): "\^A",
+
+    ("", "Newline"): "\n",
+    ("", "Backspace"): "KEY_BACKSPACE",
+    ("", "Delete"): "KEY_DC"
+}
+
 class PyCUAEd:
 
     def __init__(self):
         self.curses_window = 0
         self.buffer = [""] # list of lines
-        self.cursor = (0,0)
+        self.cursor = (0,0) # x,y (right, down), not as curses unconventional y,x
         self.top_left = (0,0) # where in the text is the window "viewport" anchored
         self.history = []
 
@@ -28,11 +58,14 @@ class PyCUAEd:
         self.curses_window = stdscr
         self.curses_window.clear()
         while 1:
-            self.curses_window.redraw()
+            self.curses_window.refresh()
             pressedkey=self.curses_window.getkey()
-            self.curses_window.addstr(pressedkey)
+            for key, value in key_mapping.items():
+                if re.fullmatch(key, pressedkey, re.ASCII):
+                    value(pressedkey)
+#           self.curses_window.addstr(pressedkey)
 
-    @keystroke("Ctrl", "z")
+    @keystroke("Ctrl", "u") # TODO: Ctrl-z is suspend, so either catch it or use a different key
     def undo(self):
         pass
     @keystroke("Ctrl", "y")
@@ -42,7 +75,7 @@ class PyCUAEd:
     @keystroke("Ctrl", "x")
     def cut(self):
         pass
-    @keystroke("Ctrl", "c")
+    @keystroke("Ctrl", "g") # TODO: Ctrl-c is kill, so either catch it or use a different key
     def copy(self):
         pass
     @keystroke("Ctrl", "v")
@@ -68,6 +101,10 @@ class PyCUAEd:
     def quit(self):
         pass
 
+    @keystroke("Ctrl", "a")
+    def select_all(self):
+        pass
+
     @keystroke("Shift", "Up|Down|Left|Right")
     def shift_arrows(self):
         pass
@@ -76,8 +113,10 @@ class PyCUAEd:
         pass
 
     @keystroke("", ".")
-    def std(self):
-        pass
+    def std(self, pressedkey):
+        self.cursor[0]
+        self.curses_window.addstr(pressedkey)
+
     @keystroke("", "Newline")
     def newline(self):
         pass
@@ -93,7 +132,7 @@ class PyCUAEd:
         pass
 
     @keystroke("Alt", "f")
-    def format(self):
+    def find(self):
         pass
 
 def main():
