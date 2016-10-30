@@ -1,6 +1,17 @@
+#!/usr/bin/python
+
 import curses
 
-# https://docs.python.org/3/howto/curses.html
+# doc https://docs.python.org/3/howto/curses.html
+
+# usage: download from https://raw.githubusercontent.com/bleicher/pycuaed/master/pycuaed.py, start with
+# python pycuaed.py
+
+def keystroke(modifier, key):
+    return lambda f: store_key((modifier, key), f)
+
+def store_key(modifierkey, f):
+    PyCUAEd.key_mapping[modifierkey] = f
 
 class PyCUAEd:
     key_mapping = {}
@@ -19,9 +30,6 @@ class PyCUAEd:
             self.curses_window.redraw()
             pressedkey=self.curses_window.getkey()
             self.curses_window.addstr(pressedkey)
-
-    def keystroke(self, f, modifier, key):
-        PyCUAEd.key_mapping[(modifier, key)] = f
 
     @keystroke("Ctrl", "z")
     def undo(self):
@@ -48,7 +56,7 @@ class PyCUAEd:
         pass
 
     @keystroke("Ctrl", "p")
-    def print(self):
+    def print_(self):
         pass
 
     @keystroke("Ctrl", "f")
