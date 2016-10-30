@@ -11,10 +11,11 @@ def keystroke(modifier, key):
     return lambda f: store_key((modifier, key), f)
 
 def store_key(modifierkey, f):
-    PyCUAEd.key_mapping[modifierkey] = f
+    key_mapping[modifierkey] = f
+
+key_mapping = {}
 
 class PyCUAEd:
-    key_mapping = {}
 
     def __init__(self):
         self.curses_window = 0
@@ -94,7 +95,6 @@ class PyCUAEd:
     @keystroke("Alt", "f")
     def format(self):
         pass
-
 
 def main():
     pycuaed = PyCUAEd()
